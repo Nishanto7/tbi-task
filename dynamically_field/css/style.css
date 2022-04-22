@@ -1,0 +1,13 @@
+.element_box{
+    border:1px solid;
+    
+}
+
+.imgFile{
+    display: inline;
+}
+
+input[type=file] {
+    display: inline;
+    
+}
