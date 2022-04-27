@@ -1,7 +1,4 @@
 <?php
-
-use GuzzleHttp\Promise\Is;
-
 include('conn.php');
 session_start();
 ?>
@@ -11,11 +8,18 @@ session_start();
         <script>
             function change()
             {
+                var hid = document.getElementById('hide').value;
+                var rec = document.getElementById('txtrec').value;
                 var val = document.getElementById('drop').value;
+                if(rec>hid)
+                {
+                    var page = 1;
+                    window.location.href = 'list.php?page='+page;
+                }
+                else{
                 window.location.href = 'list.php?page='+val;
                 document.getElementById('drop').val = val;
-                // var num = document.getElementById("txtrec").value;
-                // window.location = 'list.php?page='+val +'&num='+num;
+                }
             }
         </script>
     </head>
@@ -36,7 +40,7 @@ session_start();
                     <th>Hobbies</th>
                     <th>Image</th>
                 </tr>
-               <b>Enter Record:</b> <input type="text"  name="txt"  id='txtrec'    class="my-4"/>
+               <b>Enter Record:</b> <input type="text"  name="txt"  id='txtrec' class="my-4"/>
                <input type="submit" name="b1" class="btn btn-success mx-3" value="submit"/>
                  <?php
                  if(isset($_POST['b1']))
@@ -62,8 +66,13 @@ session_start();
                  $qry1 = "select * from  tbform ";
                  $res1 = mysqli_query($link,$qry1);
                  $num_rows = mysqli_num_rows($res1);
+                 echo"<input type ='hidden' id = 'hide' value =$num_rows/>";
                  //determine total no of pages
                  $num_of_pages = ceil($num_rows/$resPerPage);
+                 if($_POST['txt']>$num_rows)
+                 {
+                     header("location:list.php?page=1");
+                 } 
                  if(!isset($_REQUEST['page']))
                   {
                     $page = 1;
@@ -100,19 +109,20 @@ session_start();
                     $i++;
                 }    
                 //display the link of the pages in URL  
-                          
+                       
                  ?>
             </table>
             <center>
             <?php
+           
                 echo"<select name = 'drop' id ='drop' onchange ='change(this.value)'>";
                  for($page = 1; $page<= $num_of_pages; $page++) {
                       if(isset($_REQUEST['page'])&& $_REQUEST['page']==$page)
                       {  
-                    echo '<option value ='.$page.' selected><a href = "list.php?page=' . $page . '" style= "font-size:20px; margin:10px;">' . $page . ' </a></option>';  
+                    echo '<option value ='.$page.' selected>' . $page . ' </a></option>';  
                       }
                       else{
-                        echo '<option value ='.$page.'><a href = "list.php?page=' . $page . '" style= "font-size:20px; margin:10px;">' . $page . ' </a></option>';  
+                        echo '<option value ='.$page.'>' . $page . ' </a></option>';  
                       }
                 } 
                 echo"</select>";
