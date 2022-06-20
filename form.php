@@ -1,279 +1,211 @@
 <?php
-if (isset($_POST["save"]))
+$host="192.168.1.30:3066";
+$uname="nishantsharma_usr";
+$upass="S@g12Wrts";
+$dbname = "nishantsharma_db";
+$link=mysqli_connect($host,$uname,$upass,$dbname);
+if(isset($_POST['b1']))
 {
-$userans=$_POST["ans"];
-$number1=$_REQUEST["no1"];
-$number2=$_REQUEST["no2"];
-$total=$number1+$number2;
-if ($total==$userans)
-{
-    $name=$_POST["t1"];
-    $last=$_POST["t2"];
-    $eml=$_POST["t3"];
-    $pwd=$_POST["t4"];
-    $state=$_POST["state"];
-    $cty=$_POST["city"];
-    $game=$_POST["r1"];
-    $interest=$_POST["chk"];
-    echo"$name<br>";
-    echo"$last<br>";
-    echo"$eml<br>";
-    echo"$pwd<br>";
-    echo"$state<br>";
-    echo"$cty<br>";
-    echo"$game<br>";
-    foreach($interest as $hobbie)
+    if(!empty($_POST['g-recaptcha-response']))
     {
-    echo"$hobbie<br>";
-    }
-    $file_name=$_FILES['image']['name'];
-    $file_size=$_FILES['image']['size'];
-    $file_tmp=$_FILES['image']['tmp_name'];
-    $file_type=$_FILES['image']['type'];
-    $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+   $secret = '6LcPp4AfAAAAAJKV-5aoz7i7FA1zKonBB_hHdrY5';
+   $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$secret.'&response='.$_POST['g-recaptcha-response']);    $responseData = json_decode($verifyResponse);
+   if($responseData->success)
+   {
+   $fn=$_POST['txtfn'];
+   $ln=$_POST['txtln']; 
+   $eml=$_POST['txteml'];
+   $pass=$_POST['txtpass'];
+   $cpass=$_POST['txtcpass'];
+   $city =$_POST['cty'];
+   $state=$_POST['sta'];
+   $gender=$_POST['r1'];
+   $hobbies=$_POST['chk'];
+   $encrt = md5($pass);
+   $date = date('Y/m/d H:i:s');
+   foreach($hobbies as $hobbie)
+   {
+       $hb.=$hobbie.",";
+   }
+   $filename = $_FILES['upload']['name'];
+   if($filename=="")
+   {
+       $fileName="";
+   }
+   else
+   {
+   $file_tmp = $_FILES['upload']['tmp_name'];
+   $ext = pathinfo($filename,PATHINFO_EXTENSION);
+   $fileName = time().'.'.$ext;
+   $add = 'uploads/'.$fileName;
+   }
 
-    $date=time();
-    $filename=$date. '.' . $ext;
-    $add="upload/".$filename;
-
-    if(move_uploaded_file($file_tmp,$add))
-    {
-        echo '<img src="upload/'.$filename.'"><br>';
-    
-    }
-
-    $n_width = '50'; // Fix the width of the thumb nail images
-    $n_height= '50'; // Fix the height of the thumb nail imaage
-    //function thumbnail($n_width,$n_height)
-    
-        $tsrc="thumbnail/".$GLOBALS['filename'].""; // Path where thumb nail image will be stored
-        if (!($GLOBALS['file_type'] =="image/jpeg" OR $GLOBALS['file_type']=="image/png"))
+   if($pass == $cpass)
+   {
+       //Insert image to tbimg table
+       if($filename!="")
         {
-        echo "Your uploaded file must be of JPEG. Other file types are not allowed<BR>";
-        exit;
-        }
-        if($GLOBALS['file_type']=="image/jpeg"){
-            $im=ImageCreateFromJPEG($GLOBALS['add']);
-            $width=ImageSx($im); // Original picture width is stored
-            $height=ImageSy($im); // Original picture height is stored
-            $n_height=($n_width/$width) * $height;
-            $newimage=imagecreatetruecolor($n_width,$n_height);
-            imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-            ImageJpeg($newimage,$tsrc);
-            chmod($tsrc,0777);
-            echo'<img src="thumbnail/'.$GLOBALS['filename'].'"><br>';
-        }
-        if($GLOBALS['file_type']=="image/png"){
-            $im=ImageCreateFromPNG($GLOBALS['add']); 
-            $width=ImageSx($im);              // Original picture width is stored
-            $height=ImageSy($im);             // Original picture height is stored
-            // Add this line to maintain aspect ratio
-            $n_height=($n_width/$width) * $height; 
-            $newimage=imagecreatetruecolor($n_width,$n_height);                 
-            imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-            Imagepng($newimage,$tsrc);
-            chmod("$tsrc",0777);
-            echo'<img src="thumbnail/'.$GLOBALS['filename'].'"><br>';
-        }
-            
-    // thumbnail(50,50);
-    // thumbnail(100,100);
-    // thumbnail(150,150);
-    // thumbnail(200,200);
-    $n_width = '100'; // Fix the width of the thumb nail images
-    $n_height= '100'; // Fix the height of the thumb nail imaage
-    
-        $tsrc="thumbnail2/".$GLOBALS['filename'].""; // Path where thumb nail image will be stored
-        if (!($GLOBALS['file_type'] =="image/jpeg" OR $GLOBALS['file_type']=="image/png"))
+        move_uploaded_file($file_tmp,$add);
+        $qry1 = "Insert tbimg(File) values('$fileName')";
+        $res1=mysqli_query($link,$qry1);
+        //select query for fetching id from tbimg of that image
+        if(mysqli_affected_rows($link)==1)
         {
-        echo "Your uploaded file must be of JPEG. Other file types are not allowed<BR>";
-        exit;
+        $qry2="select FileID from tbimg where File='$fileName'";
+        $res2 = mysqli_query($link,$qry2);
+        $r= mysqli_fetch_row($res2);
+        $code = $r[0];
         }
-        if($GLOBALS['file_type']=="image/jpeg"){
-            $im=ImageCreateFromJPEG($GLOBALS['add']);
-            $width=ImageSx($im); // Original picture width is stored
-            $height=ImageSy($im); // Original picture height is stored
-            $n_height=($n_width/$width) * $height;
-            $newimage=imagecreatetruecolor($n_width,$n_height);
-            imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-            ImageJpeg($newimage,$tsrc);
-            chmod($tsrc,0777);
-            echo'<img src="thumbnail2/'.$GLOBALS['filename'].'"><br>';
+        // echo"$code";
         }
-        if($GLOBALS['file_type']=="image/png"){
-            $im=ImageCreateFromPNG($GLOBALS['add']); 
-            $width=ImageSx($im);              // Original picture width is stored
-            $height=ImageSy($im);             // Original picture height is stored
-            // Add this line to maintain aspect ratio
-            $n_height=($n_width/$width) * $height; 
-            $newimage=imagecreatetruecolor($n_width,$n_height);                 
-            imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-            Imagepng($newimage,$tsrc);
-            chmod("$tsrc",0777);
-            echo'<img src="thumbnail2/'.$GLOBALS['filename'].'"><br>';
+    //save data in tbform 
+        if($code!="")
+        {
+            //query for if image is not empty and email agr hai database m to error
+        $qry="Insert tbform(FirstName,LastName,Email,Password,City,State,Gender,Hobbies,File) values('$fn','$ln','$eml','$encrt','$city','$state',$gender,'$hb',$code)";
+        $res=mysqli_query($link,$qry);
+        if(mysqli_affected_rows($link)==1)
+        {
+            echo'data saved';
+        } 
+        elseif($fn!="" && $ln!="" && $eml!="" && $pass!="" && $city!="" && $state!="" && $gender!= null && $hobbies !=""){
+            echo'Email Already Exist';
         }
-
-        $n_width = '150'; // Fix the width of the thumb nail images
-        $n_height= '150'; // Fix the height of the thumb nail imaage
-        //function thumbnail($n_width,$n_height)
-        
-            $tsrc="thumbnail3/".$GLOBALS['filename'].""; // Path where thumb nail image will be stored
-            if (!($GLOBALS['file_type'] =="image/jpeg" OR $GLOBALS['file_type']=="image/png"))
+        else{
+            echo'Please Fill All details';
+        }
+        //
+    }
+    else{
+        //ye agr image ni choose ki hai to database m image feild empty rhe
+        $code=" ";
+        $qry="Insert tbform(FirstName,LastName,Email,Password,City,State,Gender,Hobbies,File) values('$fn','$ln','$eml','$encrt','$city','$state',$gender,'$hb',$code)";
+        $res=mysqli_query($link,$qry);
+        if(mysqli_affected_rows($link)==1)
+        {
+            echo'data saved';
+        }
+        else{
+            if($fn!="" && $ln!="" && $eml!="" && $pass!="" && $city!="" && $state!="" && $gender!= null && $hobbies !="")
             {
-            echo "Your uploaded file must be of JPEG. Other file types are not allowed<BR>";
-            exit;
+                echo'Email Already Exist';
             }
-            if($GLOBALS['file_type']=="image/jpeg"){
-                $im=ImageCreateFromJPEG($GLOBALS['add']);
-                $width=ImageSx($im); // Original picture width is stored
-                $height=ImageSy($im); // Original picture height is stored
-                $n_height=($n_width/$width) * $height;
-                $newimage=imagecreatetruecolor($n_width,$n_height);
-                imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-                ImageJpeg($newimage,$tsrc);
-                chmod($tsrc,0777);
-                echo'<img src="thumbnail3/'.$GLOBALS['filename'].'"><br>';
+            else{
+                echo"Please Fill all details";
             }
-            if($GLOBALS['file_type']=="image/png"){
-                $im=ImageCreateFromPNG($GLOBALS['add']); 
-                $width=ImageSx($im);              // Original picture width is stored
-                $height=ImageSy($im);             // Original picture height is stored
-                // Add this line to maintain aspect ratio
-                $n_height=($n_width/$width) * $height; 
-                $newimage=imagecreatetruecolor($n_width,$n_height);                 
-                imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-                Imagepng($newimage,$tsrc);
-                chmod("$tsrc",0777);
-                echo'<img src="thumbnail3/'.$GLOBALS['filename'].'"><br>';
-            }
-                
-            $n_width = '200'; // Fix the width of the thumb nail images
-            $n_height= '200'; // Fix the height of the thumb nail imaage
-            //function thumbnail($n_width,$n_height)
-            
-                $tsrc="thumbnail4/".$GLOBALS['filename'].""; // Path where thumb nail image will be stored
-                if (!($GLOBALS['file_type'] =="image/jpeg" OR $GLOBALS['file_type']=="image/png"))
-                {
-                echo "Your uploaded file must be of JPEG. Other file types are not allowed<BR>";
-                exit;
-                }
-                if($GLOBALS['file_type']=="image/jpeg"){
-                    $im=ImageCreateFromJPEG($GLOBALS['add']);
-                    $width=ImageSx($im); // Original picture width is stored
-                    $height=ImageSy($im); // Original picture height is stored
-                    $n_height=($n_width/$width) * $height;
-                    $newimage=imagecreatetruecolor($n_width,$n_height);
-                    imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-                    ImageJpeg($newimage,$tsrc);
-                    chmod($tsrc,0777);
-                    echo'<img src="thumbnail4/'.$GLOBALS['filename'].'"><br>';
-                }
-                if($GLOBALS['file_type']=="image/png"){
-                    $im=ImageCreateFromPNG($GLOBALS['add']); 
-                    $width=ImageSx($im);              // Original picture width is stored
-                    $height=ImageSy($im);             // Original picture height is stored
-                    // Add this line to maintain aspect ratio
-                    $n_height=($n_width/$width) * $height; 
-                    $newimage=imagecreatetruecolor($n_width,$n_height);                 
-                    imageCopyResized($newimage,$im,0,0,0,0,$n_width,$n_height,$width,$height);
-                    Imagepng($newimage,$tsrc);
-                    chmod("$tsrc",0777);
-                    echo'<img src="thumbnail4/'.$GLOBALS['filename'].'"><br>';
-                }
-                      
-                 
-}else
-{
-    $name=$_POST["t1"];
-    $last=$_POST["t2"];
-    $eml=$_POST["t3"];
-    $pwd=$_POST["t4"];
-    $state=$_POST["state"];
-    $cty=$_POST["city"];
-    $game=$_POST["r1"];
-    $interest=$_POST["chk"];
-    $file_name=$_FILES['image']['name'];
-   echo "wrong captcha entered!";
+        }
+        /*   end          */
+    }
+    }
+    //agr password aur cpass same nhi hai to ye error aaye
+    else{
+        echo'Password Not Match';
+    }
+   }
+//    }
+//    else{
+//        echo"You Entered Wrong answer";
+//    }
+}
+else{
+    echo"Captcha Not entered";
 }
 }
+// else
+// {
+//     $message = "Some error in vrifying g-recaptcha";
+// echo $message;
+// }
 ?>
-
+<!DOCTYPE html>
 <html>
-<head></head>
-<body>
-    <form name="details" action="form.php" method="post"  enctype="multipart/form-data">
-<table>
-<tr>
-    <td>Name:</td>
-    <td><input type="text" name="t1" value="<?php echo $name; ?>"></td>
-</tr>
-<tr>
-    <td>Last Name:</td>
-    <td><input type="text" name="t2" value="<?php echo $last; ?>"></td>
-</tr>
-<tr>
-    <td>Email:</td>
-    <td><input type="text" name="t3" value="<?php echo $eml; ?>"></td>
-</tr>
-<tr>
-    <td>Password:</td>
-    <td><input type="password" name="t4" value="<?php echo $pwd; ?>"></td>
-</tr>
-<tr>
-    <td>state:</td>
-    <td>
-        <select name="state">
-        <option value="-1">select state</option> 
-           <option value="punjab" <?php if($state=="punjab") echo "selected"; ?>>punjab</option>
-           <option value="haryana" <?php if($state=="haryana") echo"selected";?> >haryana</option>
-           <option value="himachal" <?php if($state=="himachal") echo"selected"; ?>>himachal</option>
-        </select>
-</td>
-</tr>
-<tr>
-    <td>City:</td>
-    <td>
-        <select name="city">
-        <option value="-1">select city</option>
-        <option value="chandigarh" <?php if($cty=="chandigarh") echo"selected"; ?>>chandigarh</option>
-           <option value="mohali" <?php if($cty=="mohali") echo"selected"; ?>>mohali</option>
-           <option value="punchkula" <?php if($cty=="punchkula") echo"selected"; ?>>punchkula</option>
-        </select>
-</td>
-</tr>
-<tr>
-<td>Games</td>
-<td>
-    <input type="radio" name="r1" value="cricket" <?php if($game=="cricket") echo "checked='true'";?> >cricket
-    <input type="radio" name="r1" value="football" <?php if($game=="football") echo "checked='true'";?>>football
-    <input type="radio" name="r1" value="volleyball" <?php if($game=="volleyball") echo"checked='true'"; ?>>volleyball
-    <input type="radio" name="r1" value="hockey" <?php if($game=="hockey") echo"checked='true'"; ?>>hockey
-</td>
-</tr>
-<tr>
-<td>Interest</td>
-<td>
-    <input type="checkbox" name="chk[]" value="web shows" <?php if (in_array("web shows",$interest)) echo "checked='checked'";?>>web shows
-    <input type="checkbox" name="chk[]" value="hiking" <?php if(in_array("hiking",$interest)) echo "checked='checked'"; ?>>hiking
-    <input type="checkbox" name="chk[]" value="reading" <?php if(in_array("reading",$interest)) echo "checked='checked'"; ?>>reading
-    <input type="checkbox" name="chk[]" value="touring" <?php if(in_array("touring",$interest)) echo "checked='checked'"; ?>>touring
-</td>
-</tr>
-<tr>
-    <td>select file</td>
-    <td><input type="file" name="image" ></td>
-</tr>
-</table>
-prove that you are a human :
-    <?php
-    $no1=rand(1,9);
-    $no2=rand(1,9);
-    echo $no1."+". $no2;
-    ?>
-    <input type="hidden" name="no1" value="<?php echo $no1 ?>">
-    <input type="hidden" name="no2" value="<?php echo $no2 ?>">
-    <input type="text" name="ans"><br>
-    <input type="submit" name="save" value="submit">
-</form>
-</body>
+    <head>
+    <script src='https://www.google.com/recaptcha/api.js' async defer ></script>           
+    </head>
+    <body>
+        <form action="form.php" method="post" name="frm" enctype="multipart/form-data" >
+        <table border="4">
+            <tr>
+        <td>
+            FirstName
+        </td>
+        <td><input type="text" name="txtfn"/></td>
+        </tr>
+        <tr>
+        <td>LastName</td>      
+        <td>
+        <input type="text" name="txtln" />
+        </td>
+        </tr>
+        <tr>
+        <td> Email:</td>
+        <td><input type="email" name="txteml"/></td>
+        </tr>
+        <tr>
+           <td> Password:</td><td><input type="password" name="txtpass" autocomplete="off"/></td>
+        </tr>
+        <tr>
+
+        <td>Confirm Password:</td><td><input type="password" name="txtcpass"/></td></tr>
+        <tr>
+        <td>City:</td><td><select name="cty">
+            <option value="-1" >Select City</option>
+            <option value="HMR">Hamirpur</option>
+            <option value="Mum">Mumbai</option>
+            <option value="Pune">Pune</option></td>
+        </select></tr>
+        <tr>
+        <td>State</td>
+        <td>
+        <select name="sta">
+            <option value="-1">Select State</option>
+            <option value="HP">Himachal Pradesh</option>
+            <option value="Pun">Punjab</option>
+            <option value="UK">UttraKhand</option>
+            <option value="HR">Haryana</option>
+        </select></td></tr>
+        <tr>
+        <td>Gender:</td><td><input type="radio" name="r1" value="0"/>Male
+        <input type="radio" name="r1" value="1"/>Female
+        <input type="radio" name="r1" value="2" />Other</td>
+        </tr>
+        <tr>
+        <td>Hobbies:</td><td><input type="checkbox" name="chk[]" value="Reading"/>Reading
+        <input type="checkbox" name="chk[]" value="Running"/>Running
+        <input type="checkbox" name="chk[]" value="Driving"/>Driving
+        <input type="checkbox" name="chk[]" value="Sleeping"/>Sleeping</td>
+        </tr>
+        <tr>
+            <td>
+                Upload:
+            </td>
+            <td>
+                <input type="file" name="upload" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Captcha:
+            </td>
+            <!-- <td> -->
+                 <!--<?php
+                  // $num1=rand(1,20);
+                   //$num2=rand(1,20);
+                  // echo"$num1 + $num2 ="; 
+                ?>-->
+                <!-- <input type="text" name="txtcap" />
+                <input type='hidden' name="num1" value="<?php echo $num1 ?>"/>
+                <input type='hidden' name="num2" value="<?php echo $num2 ?>"/> -->
+                <td class="g-recaptcha" data-sitekey="6LcPp4AfAAAAAL2dQoiiOxI_tO0HaECnzeG60Wnk" data-callback='onSubmit' data-action='submit'>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" name="b1" value="Submit" id='submit'/>
+                <a href="index.php" style="float: right;margin:0px 2px;">Login</a>
+            </td>
+        </tr>  
+        </table>
+        </form>
+    </body>
 </html>
